@@ -13,43 +13,8 @@ library(sekrnaseq)
 lib <-c("ggplot2", "gridExtra", "devtools", "plotly","ggrepel","superheat","tidyverse",'viridis','data.table','heatmaply',"dplyr","ggbiplot", "DESeq2","superheat","edgeR","limma","Glimma","gplots","org.Mm.eg.db","RColorBrewer","fgsea","gridExtra","DEFormats","statmod","org.Hs.eg.db","pheatmap","edgeR","svglite","biomaRt","msigdbr","fgsea","clusterProfiler","enrichplot","DOSE","plyr","ggrastr","Rsamtools","rtracklayer","GenomicAlignments","bedr","Rsubread","GenomicFeatures","doParallel","BiocParallel", "GenomicAlignments","GenomicRanges","rtracklayer","ChIPQC","Rsamtools","Gviz","GenomicFeatures","RMariaDB","BiocParallel","tools","ChIPseeker","TxDb.Mmusculus.UCSC.mm10.knownGene","EnsDb.Mmusculus.v79","clusterProfiler","AnnotationDbi","org.Mm.eg.db","dplyr","diffloop","DiffBind","systemPipeR","plotly")
 install_load(lib)
 
-```
-```{r Experiment name and setup}
 ###Input experiment name, format YYYYMMDD_(initials,exp owner)_(projectID/name of experiment)_(special conditions/info). Avoid using spaces and any special characters aside from - and _. Place a folder with the same name, and move Source files to that folder.
 exp_name <- "test"
-
-```
-
-
-
-```{r Load in bam files for featurecounts, skip if starting with raw count tables, echo=FALSE, include=FALSE}
-#### FeatureCounts, create a folder in Source and name it "bam-files"
-bam_file_paths <- list.files(path = paste0("Source/",exp_name,"bam-files/"), pattern = "\\.bam$",ignore.case=TRUE, full.names = TRUE)
-
-##available GTF files include mm9, mm10, hg19, hg38
-gtffile <- file.path("Genesets/GTF/mm10/Genomic_Features/Mus_musculus.GRCm38.90.gtf")
-
-### parallel feature counts (was actually slower!!)
-# registered()
-# start_time <- Sys.time()
-# snow <- SnowParam(workers = 8, type = "SOCK")
-# fc1 <- bplapply(bam_file_paths, featureCounts, BPPARAM = snow, annot.ext = gtffile, isGTFAnnotationFile = TRUE, isPairedEnd=FALSE, strandSpecific=1) %>% combineFCResults
-# end_time <- Sys.time()
-# end_time - start_time
-
-start_time <- Sys.time()
-fc <- featureCounts(files=bam_file_paths, 
-                    annot.ext=gtffile, 
-                    isGTFAnnotationFile=TRUE,
-                    isPairedEnd=FALSE,
-                    strandSpecific= 1,
-                    nthreads = 8)
-end_time <- Sys.time()
-end_time - start_time
-
-Counts_table<- data.frame(fc$counts)
-
-write.table(Counts_table, file= paste0("Source/",exp_name,"/Counts_table.tsv"), sep="\t", row.names = TRUE, col.names=NA)
 
 ```
 
@@ -79,6 +44,8 @@ cont.matrix <- makeContrasts(Mock_stim_unstim = Mock_stim-Mock_unstim, Irf1_stim
 
 #DE analysis (Voom/EdgeR), plots = TRUE/FALSE, set keep= no. of replicates, thresh= threshold to exclude for low CPM expression, species= human or mouse, genekeytype, "ensembl", "entrez"
 data_out <- sekrnaseq::DE_analysis(countdata, sampleinfo, group_param = "param_1", keep = 2, thresh= 3, exp_name = exp_name, design= design, cont.matrix= cont.matrix, species = "mouse", genekeytype = "ensembl", archived = "FALSE", plots=F)
+
+saveRDS(data_out, file=paste0("DE/",exp_name,"/data_out.RDS"))
 
 #generates CPMlist for export
 CPMlist<- CPMtable(countdata, sampleinfo, group_param = "param_1", keep = 2, thresh= 3, species = "mouse", genekeytype = "ensembl", archived = F)
