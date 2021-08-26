@@ -1,0 +1,98 @@
+---
+title: "GSEA"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(devtools)
+install_github("sek0002/sekrnaseq")
+library(sekrnaseq)
+
+lib <-c("ggplot2", "gridExtra", "devtools", "plotly","ggrepel","superheat","tidyverse",'viridis','data.table','heatmaply',"dplyr","ggbiplot", "DESeq2","superheat","edgeR","limma","Glimma","gplots","org.Mm.eg.db","RColorBrewer","fgsea","gridExtra","DEFormats","statmod","org.Hs.eg.db","pheatmap","edgeR","svglite","biomaRt","msigdbr","fgsea","clusterProfiler","enrichplot","DOSE","plyr","ggrastr","Rsamtools","rtracklayer","GenomicAlignments","bedr","Rsubread","GenomicFeatures","doParallel","BiocParallel", "GenomicAlignments","GenomicRanges","rtracklayer","ChIPQC","Rsamtools","Gviz","GenomicFeatures","RMariaDB","BiocParallel","tools","ChIPseeker","TxDb.Mmusculus.UCSC.mm10.knownGene","EnsDb.Mmusculus.v79","clusterProfiler","AnnotationDbi","org.Mm.eg.db","dplyr","diffloop","DiffBind","systemPipeR","plotly")
+install_load(lib)
+
+data_out<- readRDS(paste0("DE/",exp_name,"/data_out.RDS"))
+```
+
+```{r Load files}
+
+### plots generated script, alternative dotplot
+  for(x in colnames(cont.matrix)){
+results_all<- gseatest(data_out,method ="edger",species="mouse",cat="H",expname = paste0(exp_name,"/H/"), DEgroup=x, plot=T)
+p2 <- dotplot_gsea(results_all, x="NES", size="p.adjust",color= NULL, showCategory=20, font.size=10, title="dotplot for GSEA")
+p2
+ggsave(file=paste0("GSEA/",exp_name,"/H/",x,"_","GSEA_qlf_dotplot",".pdf", sep=""), plot=p2, units="in", width=7, height=6)
+b1 <- barplot_gsea(results_all, x="NES",color= "p.adjust", showCategory=30, ylab= "NES",font.size=10, title="barplot for GSEA")
+ggsave(file=paste0("GSEA/",exp_name,"/H/",x,"_","GSEA_qlf_barplot",".pdf", sep=""), plot=b1, units="in", width=7, height=6)
+
+  }
+
+# barplot_gsea(results_all, x="NES",color= "p.adjust", showCategory=30, ylab= "NES",font.size=10, title="barplot for GSEA")
+# results_all<- gseatest(data_out,method ="edger",species="mouse",cat="H",expname = "Corvus_Paul", DEgroup=x, plot=T)
+
+##C2: CP:PID","CP:BIOCARTA","CP:KEGG
+  for(x in colnames(cont.matrix)){
+results_all<-gseatest(data_out,method ="edger",species="mouse",cat="C2", subcat= c("CP:PID","CP:BIOCARTA","CP:KEGG"),expname = paste0(exp_name,"/C2/"), DEgroup=x, plot=F)
+p2 <- dotplot_gsea(results_all, x="NES", size= "p.adjust", color= NULL, showCategory=30, font.size=10, title="dotplot for GSEA")
+p2
+ggsave(file=paste0("GSEA/",exp_name,"/C2/",x,"_","GSEA_qlf_dotplot",".pdf", sep=""), plot=p2, units="in", width=7, height=6)
+b1 <- barplot_gsea(results_all, x="NES",color= "p.adjust", showCategory=30, ylab= "NES",font.size=10, title="barplot for GSEA")
+ggsave(file=paste0("GSEA/",exp_name,"/C2/",x,"_","GSEA_qlf_barplot",".pdf", sep=""), plot=b1, units="in", width=7, height=6)
+  }
+
+
+##C5:GO pathways
+  for(x in colnames(cont.matrix)){
+results_all<-gseatest(data_out,method ="edger",species="mouse",cat="C5",expname = paste0(exp_name,"/C5/"), DEgroup=x, plot=F)
+p2 <- dotplot_gsea(results_all, x="NES", size= "p.adjust", color= NULL, showCategory=30, font.size=10, title="dotplot for GSEA")
+p2
+ggsave(file=paste0("GSEA/",exp_name,"/C5/",x,"_","GSEA_qlf_dotplot",".pdf", sep=""), plot=p2, units="in", width=7, height=6)
+b1 <- barplot_gsea(results_all, x="NES",color= "p.adjust", showCategory=30, ylab= "NES",font.size=10, title="barplot for GSEA")
+ggsave(file=paste0("GSEA/",exp_name,"/C5/",x,"_","GSEA_qlf_barplot",".pdf", sep=""), plot=b1, units="in", width=7, height=6)
+  }
+
+
+##C3 pathways
+    for(x in colnames(cont.matrix)){
+  results_all<-gseatest(data_out,method ="edger",species="mouse",cat="C3",expname = paste0(exp_name,"/C3/"), DEgroup=x, plot=F)
+  p2 <- dotplot_gsea(results_all, x="NES", size= "p.adjust", color= NULL, showCategory=30, font.size=10, title="dotplot for GSEA")
+  p2
+  ggsave(file=paste0("GSEA/",exp_name,"/C3/",x,"_","GSEA_qlf_dotplot",".pdf", sep=""), plot=p2, units="in", width=7, height=6)
+  b1 <- barplot_gsea(results_all, x="NES",color= "p.adjust", showCategory=30, ylab= "NES",font.size=10, title="barplot for GSEA")
+  ggsave(file=paste0("GSEA/",exp_name,"/C3/",x,"_","GSEA_qlf_barplot",".pdf", sep=""), plot=b1, units="in", width=7, height=6)
+    }
+  
+##C3:TFT pathways
+    for(x in colnames(cont.matrix)){
+  results_all<-gseatest(data_out,method ="edger",species="mouse",cat="C3", subcat= c("TFT"), expname = paste0(exp_name,"/C3_TFT/"), DEgroup=x, plot=F)
+  p2 <- dotplot_gsea(results_all, x="NES", size= "p.adjust", color= NULL, showCategory=30, font.size=10, title="dotplot for GSEA")
+  p2
+  ggsave(file=paste0("GSEA/",exp_name,"/C3_TFT/",x,"_","GSEA_qlf_dotplot",".pdf", sep=""), plot=p2, units="in", width=7, height=6)
+  b1 <- barplot_gsea(results_all, x="NES",color= "p.adjust", showCategory=30, ylab= "NES",font.size=10, title="barplot for GSEA")
+  ggsave(file=paste0("GSEA/",exp_name,"/C3_TFT/",x,"_","GSEA_qlf_barplot",".pdf", sep=""), plot=b1, units="in", width=7, height=6)
+    }
+
+##Transcription factors
+CHEA_TF<-read.gmt("Genesets/CHEA_TF.gmt")
+colnames(CHEA_TF)<-c("gs_name","HGNC.symbol")
+
+asd<- convertHumanGeneList(CHEA_TF$HGNC.symbol)
+asd_unique<- asd[!duplicated(asd$HGNC.symbol),]
+CHEA_TF_combined<- merge(CHEA_TF,asd_unique,by="HGNC.symbol")
+colnames(CHEA_TF_combined)[3]<-"gene_symbol"
+
+  for(x in colnames(cont.matrix)){
+results_all<-gseatest(data_out,method ="edger",expname = paste0(exp_name,"/CHEA_TF/"), DEgroup=x, customGS= CHEA_TF_combined, plot=T)}
+
+###The ENCODE TF target library contains ChIP-seq experiments from human and mouse and the Literature ChIP-seq library contains ChIP-seq experiments from human, mouse and rat. GTEx, ARCHS4, and ReMap libraries were constructed from human data. https://amp.pharm.mssm.edu/chea3/#top
+lit_chipseq<-read.gmt("Genesets/Literature_ChIP-seq.gmt")
+colnames(lit_chipseq)<-c("gs_name","gene_symbol")
+
+  for(x in colnames(cont.matrix)){
+results_all<-gseatest(data_out,method ="edger",expname = exp_name,"/Lit_chipseq/", DEgroup=x, customGS= lit_chipseq, plot=T)}
+
+
+```
+

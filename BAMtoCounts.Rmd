@@ -1,0 +1,54 @@
+---
+title: "BAMtoCounts"
+output: html_document
+---
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(devtools)
+install_github("sek0002/sekrnaseq")
+library(sekrnaseq)
+
+lib <-c("ggplot2", "gridExtra", "devtools", "plotly","ggrepel","superheat","tidyverse",'viridis','data.table','heatmaply',"dplyr","ggbiplot", "DESeq2","superheat","edgeR","limma","Glimma","gplots","org.Mm.eg.db","RColorBrewer","fgsea","gridExtra","DEFormats","statmod","org.Hs.eg.db","pheatmap","edgeR","svglite","biomaRt","msigdbr","fgsea","clusterProfiler","enrichplot","DOSE","plyr","ggrastr","Rsamtools","rtracklayer","GenomicAlignments","bedr","Rsubread","GenomicFeatures","doParallel","BiocParallel", "GenomicAlignments","GenomicRanges","rtracklayer","ChIPQC","Rsamtools","Gviz","GenomicFeatures","RMariaDB","BiocParallel","tools","ChIPseeker","TxDb.Mmusculus.UCSC.mm10.knownGene","EnsDb.Mmusculus.v79","clusterProfiler","AnnotationDbi","org.Mm.eg.db","dplyr","diffloop","DiffBind","systemPipeR","plotly")
+install_load(lib)
+
+```
+```{r Experiment name and setup}
+###Input experiment name, format YYYYMMDD_(initials,exp owner)_(projectID/name of experiment)_(special conditions/info). Avoid using spaces and any special characters aside from - and _. Place a folder with the same name, and move Source files to that folder.
+exp_name <- "test"
+
+```
+
+```{r Load in bam files for featurecounts, skip if starting with raw count tables, echo=FALSE, include=FALSE}
+#### FeatureCounts, create a folder in Source and name it "bam-files"
+bam_file_paths <- list.files(path = paste0("Source/",exp_name,"bam-files/"), pattern = "\\.bam$",ignore.case=TRUE, full.names = TRUE)
+
+##available GTF files include mm9, mm10, hg19, hg38, download gtf files, input path to gtf files
+
+gtffile <- file.path("")
+
+### parallel feature counts (was actually slower!!)
+# registered()
+# start_time <- Sys.time()
+# snow <- SnowParam(workers = 8, type = "SOCK")
+# fc1 <- bplapply(bam_file_paths, featureCounts, BPPARAM = snow, annot.ext = gtffile, isGTFAnnotationFile = TRUE, isPairedEnd=FALSE, strandSpecific=1) %>% combineFCResults
+# end_time <- Sys.time()
+# end_time - start_time
+
+start_time <- Sys.time()
+fc <- featureCounts(files=bam_file_paths, 
+                    annot.ext=gtffile, 
+                    isGTFAnnotationFile=TRUE,
+                    isPairedEnd=FALSE,
+                    strandSpecific= 1,
+                    nthreads = 8)
+end_time <- Sys.time()
+end_time - start_time
+
+Counts_table<- data.frame(fc$counts)
+
+write.table(Counts_table, file= paste0("Source/",exp_name,"/Counts_table.tsv"), sep="\t", row.names = TRUE, col.names=NA)
+
+```
