@@ -1,0 +1,13 @@
+Column,param_1
+Irf1.Stim.R1_sorted.bam,Irf1_stim
+Irf1.Stim.R2_sorted.bam,Irf1_stim
+Irf1.Unstim.R1_sorted.bam,Irf1_unstim
+Irf1.Unstim.R2_sorted.bam,Irf1_unstim
+Mock.Stim.R1_sorted.bam,Mock_stim
+Mock.Stim.R2_sorted.bam,Mock_stim
+Mock.Unstim.R1_sorted.bam,Mock_unstim
+Mock.Unstim.R2_sorted.bam,Mock_unstim
+Socs1.Stim.R1_sorted.bam,Socs1_stim
+Socs1.Stim.R2_sorted.bam,Socs1_stim
+Socs1.Unstim.R1_sorted.bam,Socs1_unstim
+Socs1.Unstim.R2_sorted.bam,Socs1_unstim
