@@ -1,0 +1,97 @@
+---
+title: "Pipeline-analysis"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(devtools)
+install_github("sek0002/sekrnaseq")
+library(sekrnaseq)
+
+lib <-c("ggplot2", "gridExtra", "devtools", "plotly","ggrepel","superheat","tidyverse",'viridis','data.table','heatmaply',"dplyr","ggbiplot", "DESeq2","superheat","edgeR","limma","Glimma","gplots","org.Mm.eg.db","RColorBrewer","fgsea","gridExtra","DEFormats","statmod","org.Hs.eg.db","pheatmap","edgeR","svglite","biomaRt","msigdbr","fgsea","clusterProfiler","enrichplot","DOSE","plyr","ggrastr","Rsamtools","rtracklayer","GenomicAlignments","bedr","Rsubread","GenomicFeatures","doParallel","BiocParallel", "GenomicAlignments","GenomicRanges","rtracklayer","ChIPQC","Rsamtools","Gviz","GenomicFeatures","RMariaDB","BiocParallel","tools","ChIPseeker","TxDb.Mmusculus.UCSC.mm10.knownGene","EnsDb.Mmusculus.v79","clusterProfiler","AnnotationDbi","org.Mm.eg.db","dplyr","diffloop","DiffBind","systemPipeR","plotly")
+install_load(lib)
+
+```
+```{r Experiment name and setup}
+###Input experiment name, format YYYYMMDD_(initials,exp owner)_(projectID/name of experiment)_(special conditions/info). Avoid using spaces and any special characters aside from - and _. Place a folder with the same name, and move Source files to that folder.
+exp_name <- "test"
+
+```
+
+
+
+```{r Load in bam files for featurecounts, skip if starting with raw count tables, echo=FALSE, include=FALSE}
+#### FeatureCounts, create a folder in Source and name it "bam-files"
+bam_file_paths <- list.files(path = paste0("Source/",exp_name,"bam-files/"), pattern = "\\.bam$",ignore.case=TRUE, full.names = TRUE)
+
+##available GTF files include mm9, mm10, hg19, hg38
+gtffile <- file.path("Genesets/GTF/mm10/Genomic_Features/Mus_musculus.GRCm38.90.gtf")
+
+### parallel feature counts (was actually slower!!)
+# registered()
+# start_time <- Sys.time()
+# snow <- SnowParam(workers = 8, type = "SOCK")
+# fc1 <- bplapply(bam_file_paths, featureCounts, BPPARAM = snow, annot.ext = gtffile, isGTFAnnotationFile = TRUE, isPairedEnd=FALSE, strandSpecific=1) %>% combineFCResults
+# end_time <- Sys.time()
+# end_time - start_time
+
+start_time <- Sys.time()
+fc <- featureCounts(files=bam_file_paths, 
+                    annot.ext=gtffile, 
+                    isGTFAnnotationFile=TRUE,
+                    isPairedEnd=FALSE,
+                    strandSpecific= 1,
+                    nthreads = 8)
+end_time <- Sys.time()
+end_time - start_time
+
+Counts_table<- data.frame(fc$counts)
+
+write.table(Counts_table, file= paste0("Source/",exp_name,"/Counts_table.tsv"), sep="\t", row.names = TRUE, col.names=NA)
+
+```
+
+```{r Diff exp analyses}
+
+## User input (seqdata), user input(sampledata), see template sampleinfo for correct format
+seqdata <- read.delim(paste0("Source/",exp_name,"/Counts_table.tsv"), sep="\t", na.strings = c("", "NA"))
+
+sampleinfo <- read.delim(paste0("Source/",exp_name,"/sampleinfo.csv"), sep=",")
+for (i in 2:ncol(sampleinfo)){
+sampleinfo[,i] <- make.names(sampleinfo[,i], unique = FALSE, allow_ = TRUE)
+}
+countdata <- seqdata[,-c(1)]
+rownames(countdata)<- seqdata[,1]
+
+#Check if sampleinfo names matches colnames in countdata
+print(sampleinfo$Column==colnames(countdata))
+
+###Design and cont.matrix and labels
+groupDE <- paste(sampleinfo[,"param_1"])
+groupDE <- factor(groupDE)
+design <- model.matrix(~0+groupDE)
+colnames(design)<- levels(groupDE)
+
+### using labels under param_1 type out groups to compare for diff expression, comparison= group1(+ve direction)-group2(-ve direction) ie. Mock_stim_unstim= Mock_stim-Mock_unstim 
+cont.matrix <- makeContrasts(Mock_stim_unstim = Mock_stim-Mock_unstim, Irf1_stim_unstim = Irf1_stim-Irf1_unstim, Socs1_stim_unstim= Socs1_stim-Socs1_unstim, Irf1_Mock_stim=Irf1_stim-Mock_stim, Irf1_Mock_unstim=Irf1_unstim-Mock_unstim, Socs1_Mock_stim= Socs1_stim- Mock_stim, Socs1_Mock_unstim= Socs1_unstim-Mock_unstim, Irf1_Socs1_stim= Irf1_stim-Socs1_stim, Irf1_Socs1_unstim= Irf1_unstim-Socs1_unstim, levels=design)
+
+#DE analysis (Voom/EdgeR), plots = TRUE/FALSE, set keep= no. of replicates, thresh= threshold to exclude for low CPM expression, species= human or mouse, genekeytype, "ensembl", "entrez"
+data_out <- sekrnaseq::DE_analysis(countdata, sampleinfo, group_param = "param_1", keep = 2, thresh= 3, exp_name = exp_name, design= design, cont.matrix= cont.matrix, species = "mouse", genekeytype = "ensembl", archived = "FALSE", plots=F)
+
+#generates CPMlist for export
+CPMlist<- CPMtable(countdata, sampleinfo, group_param = "param_1", keep = 2, thresh= 3, species = "mouse", genekeytype = "ensembl", archived = F)
+# colnames(CPMlist)[2:13]<- sampleinfo$param_1
+write.table(CPMlist, file=paste0("Source/",exp_name,"/CPMlist.tsv"),row.names = F, sep="\t" )
+
+##extract raw counts
+godb_database<- org.Mm.eg.db
+    idtype <- "ENSEMBL"
+    gene.ids <- mapIds(godb_database, keys=as.character(seqdata$X),
+                       keytype=idtype, column="SYMBOL")
+    seqdata$SYMBOL <- gene.ids
+
+write.table(seqdata, file=paste0("Source/",exp_name,"/Annotated_rawcounts.tsv"),sep="\t", row.names=FALSE)
+
+```
