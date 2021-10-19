@@ -40,7 +40,7 @@ exp_name <- "test"
 
 ```{r Load in bam files for featurecounts, skip if starting with raw count tables, echo=FALSE, include=FALSE}
 #### FeatureCounts, create a folder in Source and name it "bam-files"
-bam_file_paths <- list.files(path = paste0("Source/",exp_name,"bam-files/"), pattern = "\\.bam$",ignore.case=TRUE, full.names = TRUE)
+bam_file_paths <- list.files(path = paste0("Source/",exp_name,"/bam-files/"), pattern = "\\.bam$",ignore.case=TRUE, full.names = TRUE)
 
 ##available GTF files include mm9, mm10, hg19, hg38, download gtf files, input path to gtf files
 
