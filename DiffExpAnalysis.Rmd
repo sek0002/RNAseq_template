@@ -7,11 +7,11 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 
 library(devtools)
-install_github("vgv/ggbiplot")
-install_github("sek0002/sekrnaseq", dependencies=T)
+install_github("vqv/ggbiplot")
+install_github("sek0002/sekrnaseq", dependencies=T, force=F)
 library(sekrnaseq)
 
-lib <-c("ggplot2", "gridExtra", "devtools", "plotly","ggrepel","superheat","tidyverse",'viridis','data.table','heatmaply',"dplyr","ggbiplot", "DESeq2","superheat","edgeR","limma","Glimma","gplots","org.Mm.eg.db","RColorBrewer","fgsea","gridExtra","DEFormats","statmod","org.Hs.eg.db","pheatmap","edgeR","svglite","biomaRt","msigdbr","fgsea","clusterProfiler","enrichplot","DOSE","plyr","ggrastr","Rsamtools","rtracklayer","GenomicAlignments","bedr","Rsubread","GenomicFeatures","doParallel","BiocParallel", "GenomicAlignments","GenomicRanges","rtracklayer","ChIPQC","Rsamtools","Gviz","GenomicFeatures","RMariaDB","BiocParallel","tools","ChIPseeker","TxDb.Mmusculus.UCSC.mm10.knownGene","EnsDb.Mmusculus.v79","clusterProfiler","AnnotationDbi","org.Mm.eg.db","dplyr","diffloop","DiffBind","systemPipeR","plotly")
+lib <-c("ggplot2", "gridExtra", "devtools", "plotly","ggrepel","superheat","tidyverse",'viridis','data.table','heatmaply',"dplyr","ggbiplot", "DESeq2","superheat","edgeR","limma","Glimma","gplots","org.Mm.eg.db","RColorBrewer","fgsea","gridExtra","DEFormats","statmod","org.Hs.eg.db","pheatmap","edgeR","svglite","biomaRt","msigdbr","fgsea","clusterProfiler","enrichplot","DOSE","plyr","ggrastr","Rsamtools","rtracklayer","GenomicAlignments","bedr","Rsubread","GenomicFeatures","doParallel","BiocParallel", "GenomicAlignments","GenomicRanges","rtracklayer","ChIPQC","Rsamtools","Gviz","GenomicFeatures","RMariaDB","BiocParallel","tools","ChIPseeker","TxDb.Mmusculus.UCSC.mm10.knownGene","EnsDb.Mmusculus.v79","clusterProfiler","AnnotationDbi","org.Mm.eg.db","dplyr","diffloop","DiffBind","systemPipeR","plotly","EnsDb.Hsapiens.v75","EnsDb.Mmusculus.v79")
 install_load(lib)
 
 
@@ -20,8 +20,19 @@ exp_name <- "test"
 
 ```
 
-```{r Diff exp analyses}
+```{r Select reference database for annotation}
+# ##Ensure that correct database is used for ensembl IDs
+library(AnnotationHub)
+ah <- AnnotationHub()
+# 
+# ##Query and retrive object name to load Ensmb object, select latest version of GRCm38, load other objects here
+query(ah, "EnsDb.Mmusculus.v98")
+edb <- ah[["AH89211"]]
+edb
+```
 
+
+```{r Diff exp analyses}
 ## User input (seqdata), user input(sampledata), see template sampleinfo for correct format
 seqdata <- read.delim(paste0("Source/",exp_name,"/Counts_table.tsv"), sep="\t", na.strings = c("", "NA"))
 
@@ -45,22 +56,29 @@ colnames(design)<- levels(groupDE)
 cont.matrix <- makeContrasts(Mock_stim_unstim = Mock_stim-Mock_unstim, Irf1_stim_unstim = Irf1_stim-Irf1_unstim, Socs1_stim_unstim= Socs1_stim-Socs1_unstim, Irf1_Mock_stim=Irf1_stim-Mock_stim, Irf1_Mock_unstim=Irf1_unstim-Mock_unstim, Socs1_Mock_stim= Socs1_stim- Mock_stim, Socs1_Mock_unstim= Socs1_unstim-Mock_unstim, Irf1_Socs1_stim= Irf1_stim-Socs1_stim, Irf1_Socs1_unstim= Irf1_unstim-Socs1_unstim, levels=design)
 
 #DE analysis (Voom/EdgeR), plots = TRUE/FALSE, set keep= no. of replicates, thresh= threshold to exclude for low CPM expression, species= human or mouse, genekeytype, "ensembl", "entrez"
-data_out <- sekrnaseq::DE_analysis(countdata, sampleinfo, group_param = "param_1", keep = 2, thresh= 3, exp_name = exp_name, design= design, cont.matrix= cont.matrix, species = "mouse", genekeytype = "ensembl", archived = "FALSE", plots=F)
+data_out <- sekrnaseq::DE_analysis(countdata, sampleinfo, group_param = "param_1", keep = 2, thresh= 3, exp_name = exp_name, design= design, cont.matrix= cont.matrix, species = "mouse", isEnsembl = T, mouse_ensembldb = "edb", plots=T)
 
 saveRDS(data_out, file=paste0("DE/",exp_name,"/data_out.RDS"))
 
 #generates CPMlist for export
-CPMlist<- CPMtable(countdata, sampleinfo, group_param = "param_1", keep = 2, thresh= 3, species = "mouse", genekeytype = "ensembl", archived = F)
+CPMlist<- CPMtable(countdata, sampleinfo, group_param = "param_1", keep = 2, thresh= 3, species = "mouse", isEnsembl = T, mouse_ensembldb = "edb")
 # colnames(CPMlist)[2:13]<- sampleinfo$param_1
 write.table(CPMlist, file=paste0("Source/",exp_name,"/CPMlist.tsv"),row.names = F, sep="\t" )
 
 ##extract raw counts
-godb_database<- org.Mm.eg.db
-    idtype <- "ENSEMBL"
-    gene.ids <- mapIds(godb_database, keys=as.character(seqdata$X),
-                       keytype=idtype, column="SYMBOL")
-    seqdata$SYMBOL <- gene.ids
+# godb_database<- org.Mm.eg.db
+#     idtype <- "ENSEMBL"
+#     gene.ids <- mapIds(godb_database, keys=as.character(seqdata$X),
+#                        keytype=idtype, column="SYMBOL")
+#     seqdata$SYMBOL <- gene.ids
 
+## Edit reference genome database where required.
+      idtype <- "GENEID"
+      gene.ids <- mapIds(edb, keys=as.character(seqdata$X),
+                         keytype=idtype, column="SYMBOL")
+      seqdata$mgi_symbol <- gene.ids
+    
+    
 write.table(seqdata, file=paste0("Source/",exp_name,"/Annotated_rawcounts.tsv"),sep="\t", row.names=FALSE)
 
 ```

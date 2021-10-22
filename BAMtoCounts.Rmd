@@ -6,7 +6,7 @@ output: html_document
 
 ```{r setup, include=FALSE}
 library(devtools)
-install_github("vgv/ggbiplot")
+install_github("vqv/ggbiplot")
 install_github("sek0002/sekrnaseq", dependencies=T)
 library(sekrnaseq)
 
