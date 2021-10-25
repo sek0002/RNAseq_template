@@ -11,7 +11,7 @@ install_github("vqv/ggbiplot")
 install_github("sek0002/sekrnaseq", dependencies=T, force=F)
 library(sekrnaseq)
 
-lib <-c("ggplot2", "gridExtra", "devtools", "plotly","ggrepel","superheat","tidyverse",'viridis','data.table','heatmaply',"dplyr","ggbiplot", "DESeq2","superheat","edgeR","limma","Glimma","gplots","org.Mm.eg.db","RColorBrewer","fgsea","gridExtra","DEFormats","statmod","org.Hs.eg.db","pheatmap","edgeR","svglite","biomaRt","msigdbr","fgsea","clusterProfiler","enrichplot","DOSE","plyr","ggrastr","Rsamtools","rtracklayer","GenomicAlignments","bedr","Rsubread","GenomicFeatures","doParallel","BiocParallel", "GenomicAlignments","GenomicRanges","rtracklayer","ChIPQC","Rsamtools","Gviz","GenomicFeatures","RMariaDB","BiocParallel","tools","ChIPseeker","TxDb.Mmusculus.UCSC.mm10.knownGene","EnsDb.Mmusculus.v79","clusterProfiler","AnnotationDbi","org.Mm.eg.db","dplyr","diffloop","DiffBind","systemPipeR","plotly","EnsDb.Hsapiens.v75","EnsDb.Mmusculus.v79")
+lib <-c("ggplot2", "gridExtra", "devtools", "plotly","ggrepel","superheat","tidyverse",'viridis','data.table','heatmaply',"dplyr","ggbiplot", "DESeq2","superheat","edgeR","limma","Glimma","gplots","org.Mm.eg.db","RColorBrewer","fgsea","gridExtra","DEFormats","statmod","org.Hs.eg.db","pheatmap","edgeR","svglite","biomaRt","msigdbr","fgsea","clusterProfiler","enrichplot","DOSE","plyr","ggrastr","Rsamtools","rtracklayer","GenomicAlignments","bedr","Rsubread","GenomicFeatures","doParallel","BiocParallel", "GenomicAlignments","GenomicRanges","rtracklayer","ChIPQC","Rsamtools","Gviz","GenomicFeatures","RMariaDB","BiocParallel","tools","ChIPseeker","TxDb.Mmusculus.UCSC.mm10.knownGene","EnsDb.Mmusculus.v79","clusterProfiler","AnnotationDbi","org.Mm.eg.db","dplyr","diffloop","DiffBind","systemPipeR","plotly","EnsDb.Hsapiens.v75","EnsDb.Mmusculus.v79","AnnotationHub")
 install_load(lib)
 
 
@@ -25,9 +25,10 @@ exp_name <- "test"
 library(AnnotationHub)
 ah <- AnnotationHub()
 # 
-# ##Query and retrive object name to load Ensmb object, select latest version of GRCm38, load other objects here
+# ##Query and retrive object name to load Ensmb object, select latest version of GRCm38, load other objects here.
+d <- display(ah)
 query(ah, "EnsDb.Mmusculus.v98")
-edb <- ah[["AH89211"]]
+edb <- ah[["AH75036"]]
 edb
 ```
 
