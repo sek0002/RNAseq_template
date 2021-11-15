@@ -13,7 +13,11 @@ library(sekrnaseq)
 lib <-c("ggplot2", "gridExtra", "devtools", "plotly","ggrepel","superheat","tidyverse",'viridis','data.table','heatmaply',"dplyr","ggbiplot", "DESeq2","superheat","edgeR","limma","Glimma","gplots","org.Mm.eg.db","RColorBrewer","fgsea","gridExtra","DEFormats","statmod","org.Hs.eg.db","pheatmap","edgeR","svglite","biomaRt","msigdbr","fgsea","clusterProfiler","enrichplot","DOSE","plyr","ggrastr","Rsamtools","rtracklayer","GenomicAlignments","bedr","Rsubread","GenomicFeatures","doParallel","BiocParallel", "GenomicAlignments","GenomicRanges","rtracklayer","ChIPQC","Rsamtools","Gviz","GenomicFeatures","RMariaDB","BiocParallel","tools","ChIPseeker","TxDb.Mmusculus.UCSC.mm10.knownGene","EnsDb.Mmusculus.v79","clusterProfiler","AnnotationDbi","org.Mm.eg.db","dplyr","diffloop","DiffBind","systemPipeR","plotly")
 install_load(lib)
 
+
 data_out<- readRDS(paste0("DE/",exp_name,"/data_out.RDS"))
+
+### make sure to load in the cont.matrix for your respective files for the for loops scripts to work
+
 ```
 
 ```{r Load files}
