@@ -11,7 +11,7 @@ install_github("vqv/ggbiplot")
 install_github("sek0002/sekrnaseq", dependencies=T, force=F)
 library(sekrnaseq)
 
-lib <-c("ggplot2", "gridExtra", "devtools", "plotly","ggrepel","superheat","tidyverse",'viridis','data.table','heatmaply',"dplyr","ggbiplot", "DESeq2","superheat","edgeR","limma","Glimma","gplots","org.Mm.eg.db","RColorBrewer","fgsea","gridExtra","DEFormats","statmod","org.Hs.eg.db","pheatmap","edgeR","svglite","biomaRt","msigdbr","fgsea","clusterProfiler","enrichplot","DOSE","plyr","ggrastr","Rsamtools","rtracklayer","GenomicAlignments","bedr","Rsubread","GenomicFeatures","doParallel","BiocParallel", "GenomicAlignments","GenomicRanges","rtracklayer","ChIPQC","Rsamtools","Gviz","GenomicFeatures","RMariaDB","BiocParallel","tools","ChIPseeker","TxDb.Mmusculus.UCSC.mm10.knownGene","EnsDb.Mmusculus.v79","clusterProfiler","AnnotationDbi","org.Mm.eg.db","dplyr","diffloop","DiffBind","systemPipeR","plotly","EnsDb.Hsapiens.v75","EnsDb.Mmusculus.v79","AnnotationHub")
+lib <-c("ggplot2", "gridExtra", "devtools", "plotly","ggrepel","superheat","tidyverse",'viridis','data.table','heatmaply',"dplyr","ggbiplot", "DESeq2","superheat","edgeR","limma","Glimma","gplots","org.Mm.eg.db","RColorBrewer","fgsea","gridExtra","DEFormats","statmod","org.Hs.eg.db","pheatmap","edgeR","svglite","biomaRt","msigdbr","fgsea","clusterProfiler","enrichplot","DOSE","plyr","ggrastr","Rsamtools","rtracklayer","GenomicAlignments","bedr","Rsubread","GenomicFeatures","doParallel","BiocParallel", "GenomicAlignments","GenomicRanges","rtracklayer","ChIPQC","Rsamtools","Gviz","GenomicFeatures","RMariaDB","BiocParallel","tools","ChIPseeker","TxDb.Mmusculus.UCSC.mm10.knownGene","EnsDb.Mmusculus.v79","clusterProfiler","AnnotationDbi","org.Mm.eg.db","dplyr","diffloop","DiffBind","systemPipeR","plotly","EnsDb.Hsapiens.v75","EnsDb.Mmusculus.v79")
 install_load(lib)
 
 
@@ -25,18 +25,40 @@ exp_name <- "test"
 library(AnnotationHub)
 ah <- AnnotationHub()
 # 
-# ##Query and retrive object name to load Ensmb object, select latest version of GRCm38, load other objects here.
-d <- display(ah)
+# ##Query and retrive object name to load Ensmb object, select latest version of GRCm38, load other objects here
 query(ah, "EnsDb.Mmusculus.v98")
+hist <- display(ah)
 edb <- ah[["AH75036"]]
 edb
+
 ```
 
 
 ```{r Diff exp analyses}
+#test
 ## User input (seqdata), user input(sampledata), see template sampleinfo for correct format
 seqdata <- read.delim(paste0("Source/",exp_name,"/Counts_table.tsv"), sep="\t", na.strings = c("", "NA"))
 
+##extract raw counts
+# godb_database<- org.Mm.eg.db
+#     idtype <- "ENSEMBL"
+#     gene.ids <- mapIds(godb_database, keys=as.character(seqdata$X),
+#                        keytype=idtype, column="SYMBOL")
+#     seqdata$SYMBOL <- gene.ids
+
+## Edit reference genome database where required.
+      idtype <- "GENEID"
+      gene.ids <- mapIds(edb, keys=as.character(seqdata$X),
+                         keytype=idtype, column="SYMBOL")
+      seqdata$mgi_symbol <- gene.ids
+    
+    
+write.table(seqdata, file=paste0("Source/",exp_name,"/Annotated_rawcounts.tsv"),sep="\t", row.names=FALSE)
+```
+
+
+
+```{r Diff exp analyses}
 sampleinfo <- read.delim(paste0("Source/",exp_name,"/sampleinfo.csv"), sep=",")
 for (i in 2:ncol(sampleinfo)){
 sampleinfo[,i] <- make.names(sampleinfo[,i], unique = FALSE, allow_ = TRUE)
@@ -66,20 +88,5 @@ CPMlist<- CPMtable(countdata, sampleinfo, group_param = "param_1", keep = 2, thr
 # colnames(CPMlist)[2:13]<- sampleinfo$param_1
 write.table(CPMlist, file=paste0("Source/",exp_name,"/CPMlist.tsv"),row.names = F, sep="\t" )
 
-##extract raw counts
-# godb_database<- org.Mm.eg.db
-#     idtype <- "ENSEMBL"
-#     gene.ids <- mapIds(godb_database, keys=as.character(seqdata$X),
-#                        keytype=idtype, column="SYMBOL")
-#     seqdata$SYMBOL <- gene.ids
-
-## Edit reference genome database where required.
-      idtype <- "GENEID"
-      gene.ids <- mapIds(edb, keys=as.character(seqdata$X),
-                         keytype=idtype, column="SYMBOL")
-      seqdata$mgi_symbol <- gene.ids
-    
-    
-write.table(seqdata, file=paste0("Source/",exp_name,"/Annotated_rawcounts.tsv"),sep="\t", row.names=FALSE)
 
 ```

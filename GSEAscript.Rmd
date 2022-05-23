@@ -7,12 +7,14 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 
 library(devtools)
-install_github("sek0002/sekrnaseq")
+install_github("sek0002/sekrnaseq", force=F)
 library(sekrnaseq)
 
-lib <-c("ggplot2", "gridExtra", "devtools", "plotly","ggrepel","superheat","tidyverse",'viridis','data.table','heatmaply',"dplyr","ggbiplot", "DESeq2","superheat","edgeR","limma","Glimma","gplots","org.Mm.eg.db","RColorBrewer","fgsea","gridExtra","DEFormats","statmod","org.Hs.eg.db","pheatmap","edgeR","svglite","biomaRt","msigdbr","fgsea","clusterProfiler","enrichplot","DOSE","plyr","ggrastr","Rsamtools","rtracklayer","GenomicAlignments","bedr","Rsubread","GenomicFeatures","doParallel","BiocParallel", "GenomicAlignments","GenomicRanges","rtracklayer","ChIPQC","Rsamtools","Gviz","GenomicFeatures","RMariaDB","BiocParallel","tools","ChIPseeker","TxDb.Mmusculus.UCSC.mm10.knownGene","EnsDb.Mmusculus.v79","clusterProfiler","AnnotationDbi","org.Mm.eg.db","dplyr","diffloop","DiffBind","systemPipeR","plotly")
+lib <-c("ggplot2", "gridExtra", "devtools", "plotly","ggrepel","superheat","tidyverse",'viridis','data.table','heatmaply',"dplyr","ggbiplot", "DESeq2","superheat","edgeR","limma","Glimma","gplots","org.Mm.eg.db","RColorBrewer","fgsea","gridExtra","DEFormats","statmod","org.Hs.eg.db","pheatmap","edgeR","svglite","biomaRt","msigdbr","fgsea","clusterProfiler","enrichplot","DOSE","plyr","ggrastr","Rsamtools","rtracklayer","GenomicAlignments","bedr","Rsubread","GenomicFeatures","doParallel","BiocParallel", "GenomicAlignments","GenomicRanges","rtracklayer","ChIPQC","Rsamtools","Gviz","GenomicFeatures","RMariaDB","BiocParallel","tools","ChIPseeker","TxDb.Mmusculus.UCSC.mm10.knownGene","EnsDb.Mmusculus.v79","clusterProfiler","AnnotationDbi","org.Mm.eg.db","dplyr","diffloop","DiffBind","systemPipeR","plotly","ggnewscale")
 install_load(lib)
 
+##set exp name
+exp_name<- "IL715_mouse"
 
 data_out<- readRDS(paste0("DE/",exp_name,"/data_out.RDS"))
 
@@ -21,10 +23,12 @@ data_out<- readRDS(paste0("DE/",exp_name,"/data_out.RDS"))
 ```
 
 ```{r Load files}
+#Dont forget to specify and check cont.matrix
+
 
 ### plots generated script, alternative dotplot
   for(x in colnames(cont.matrix)){
-results_all<- gseatest(data_out,method ="edger",species="mouse",cat="H",expname = paste0(exp_name,"/H/"), DEgroup=x, plot=T)
+results_all<- gseatest(data_out,method ="edger",species="mouse",cat="H",expname = paste0(exp_name,"/H/"), DEgroup=x, plot=T, pvalueCutoff = 0.1)
 p2 <- dotplot_gsea(results_all, x="NES", size="p.adjust",color= NULL, showCategory=20, font.size=10, title="dotplot for GSEA")
 p2
 ggsave(file=paste0("GSEA/",exp_name,"/H/",x,"_","GSEA_qlf_dotplot",".pdf", sep=""), plot=p2, units="in", width=7, height=6)
@@ -32,7 +36,6 @@ b1 <- barplot_gsea(results_all, x="NES",color= "p.adjust", showCategory=30, ylab
 ggsave(file=paste0("GSEA/",exp_name,"/H/",x,"_","GSEA_qlf_barplot",".pdf", sep=""), plot=b1, units="in", width=7, height=6)
 
   }
-
 # barplot_gsea(results_all, x="NES",color= "p.adjust", showCategory=30, ylab= "NES",font.size=10, title="barplot for GSEA")
 # results_all<- gseatest(data_out,method ="edger",species="mouse",cat="H",expname = "Corvus_Paul", DEgroup=x, plot=T)
 
@@ -67,16 +70,19 @@ ggsave(file=paste0("GSEA/",exp_name,"/C5/",x,"_","GSEA_qlf_barplot",".pdf", sep=
   b1 <- barplot_gsea(results_all, x="NES",color= "p.adjust", showCategory=30, ylab= "NES",font.size=10, title="barplot for GSEA")
   ggsave(file=paste0("GSEA/",exp_name,"/C3/",x,"_","GSEA_qlf_barplot",".pdf", sep=""), plot=b1, units="in", width=7, height=6)
     }
-  
+library(dplyr)
 ##C3:TFT pathways
     for(x in colnames(cont.matrix)){
-  results_all<-gseatest(data_out,method ="edger",species="mouse",cat="C3", subcat= c("TFT"), expname = paste0(exp_name,"/C3_TFT/"), DEgroup=x, plot=F)
+  results_all<-gseatest(data_out,method ="edger",species="mouse",cat="C3", subcat= c("TFT"), expname = paste0(exp_name,"/C3_TFT/"), DEgroup=x, plot=T)
   p2 <- dotplot_gsea(results_all, x="NES", size= "p.adjust", color= NULL, showCategory=30, font.size=10, title="dotplot for GSEA")
   p2
   ggsave(file=paste0("GSEA/",exp_name,"/C3_TFT/",x,"_","GSEA_qlf_dotplot",".pdf", sep=""), plot=p2, units="in", width=7, height=6)
   b1 <- barplot_gsea(results_all, x="NES",color= "p.adjust", showCategory=30, ylab= "NES",font.size=10, title="barplot for GSEA")
   ggsave(file=paste0("GSEA/",exp_name,"/C3_TFT/",x,"_","GSEA_qlf_barplot",".pdf", sep=""), plot=b1, units="in", width=7, height=6)
     }
+
+
+
 
 ##Transcription factors
 CHEA_TF<-read.gmt("Genesets/CHEA_TF.gmt")
@@ -97,6 +103,95 @@ colnames(lit_chipseq)<-c("gs_name","gene_symbol")
   for(x in colnames(cont.matrix)){
 results_all<-gseatest(data_out,method ="edger",expname = exp_name,"/Lit_chipseq/", DEgroup=x, customGS= lit_chipseq, plot=T)}
 
+#C7
+# gseapathways <- msigdbr(species = "Mus musculus")
+# gseapathways<-gseapathways%>% dplyr::filter(gs_cat == "C7" ) %>% dplyr::select(gs_name, gene_symbol)
+#   gseaDat <- data_out[["qlf_file"]][["NTGFPpos_neg"]][["EdgeR.res"]] %>% na.omit()
+# ranks <- gseaDat$logFC
+# 
+#   names(ranks) <- as.character(gseaDat$SYMBOL)
+#     geneList <- sort(ranks,decreasing = T)
+#   barplot(geneList)
+#   head(geneList)
+#   
+#     results<-GSEA(geneList=geneList,
+#                 TERM2GENE=gseapathways,
+#                 verbose=TRUE,
+#                 minGSSize =  15,
+#                 maxGSSize = 200,
+#                 pvalueCutoff = 0.05,
+#                 by="fgsea",
+#                 eps=0.0)
 
+    for(x in colnames(cont.matrix)){
+  results_all<-gseatest(data_out,method ="edger",species="mouse",cat="C7",expname = paste0(exp_name,"/C7/"), DEgroup=x, plot=F)
+  p2 <- dotplot_gsea(results_all, x="NES", size= "p.adjust", color= NULL, showCategory=30, font.size=10, title="dotplot for GSEA")
+  p2
+  ggsave(file=paste0("GSEA/",exp_name,"/C7/",x,"_","GSEA_qlf_dotplot",".pdf", sep=""), plot=p2, units="in", width=7, height=6)
+  b1 <- barplot_gsea(results_all, x="NES",color= "p.adjust", showCategory=30, ylab= "NES",font.size=10, title="barplot for GSEA")
+  ggsave(file=paste0("GSEA/",exp_name,"/C7/",x,"_","GSEA_qlf_barplot",".pdf", sep=""), plot=b1, units="in", width=7, height=6)
+    }
+
+    for(x in colnames(cont.matrix)[1]){
+  results_all<-gseatest(data_out,method ="edger",species="mouse",cat="C7",expname = paste0(exp_name,"/C7/"), DEgroup=x, plot=F)
+  p2 <- dotplot_gsea(results_all, x="NES", size= "p.adjust", color= NULL, showCategory=30, font.size=10, title="dotplot for GSEA")
+  p2
+  ggsave(file=paste0("GSEA/",exp_name,"/C7/",x,"_","GSEA_qlf_dotplot",".pdf", sep=""), plot=p2, units="in", width=7, height=6)
+  b1 <- barplot_gsea(results_all, x="NES",color= "p.adjust", showCategory=30, ylab= "NES",font.size=10, title="barplot for GSEA")
+  ggsave(file=paste0("GSEA/",exp_name,"/C7/",x,"_","GSEA_qlf_barplot",".pdf", sep=""), plot=b1, units="in", width=7, height=6)
+    }
+
+
+edo <- pairwise_termsim(results_all)
+edo_plot<- emapplot(edo, cex_category=1.5) 
+  ggsave(file=paste0("GSEA/",exp_name,"/C7/test.pdf", sep=""), plot=edo_plot, units="in", width=7, height=6)
+  
+  
+```
+
+```{r}
+##C2:CP
+    for(x in colnames(cont.matrix)[1]){
+  results_all<-gseatest(data_out,method ="edger",species="mouse",cat="C2", subcat= c("CP"), expname = paste0(exp_name,"/C2_CP/"), DEgroup=x, plot=F)
+  p2 <- dotplot_gsea(results_all, x="NES", size= "p.adjust", color= NULL, showCategory=30, font.size=10, title="dotplot for GSEA")
+  p2
+  ggsave(file=paste0("GSEA/",exp_name,"/C2_CP/",x,"_","GSEA_qlf_dotplot",".pdf", sep=""), plot=p2, units="in", width=7, height=6)
+  b1 <- barplot_gsea(results_all, x="NES",color= "p.adjust", showCategory=30, ylab= "NES",font.size=10, title="barplot for GSEA")
+  ggsave(file=paste0("GSEA/",exp_name,"/C2_CP/",x,"_","GSEA_qlf_barplot",".pdf", sep=""), plot=b1, units="in", width=7, height=6)
+    }
+
+edo <- pairwise_termsim(results_all)
+edo_plot<- emapplot(edo, cex_category=1.5) 
+  ggsave(file=paste0("GSEA/",exp_name,"/C2_CP/test.pdf", sep=""), plot=edo_plot, units="in", width=7, height=6)
+```
+
+
+```{r Load files}
+# test<- results_all@result
+# 
+# #GSEA table
+# topUp <- test %>% 
+#     dplyr::filter(NES > 0) %>% 
+#     top_n(10, wt=-p.adjust)
+# topDown <- test %>% 
+#     dplyr::filter(NES < 0) %>% 
+#     top_n(10, wt=-p.adjust)
+# topPathways <- bind_rows(topUp, topDown) %>% 
+#     arrange(-NES)
+# 
+# asd<- data("examplePathways")
+# data("exampleRanks")
+# 
+# gseapathways_list<- data.frame(gseapathways$gs_name)
+# plotGseaTable(topPathways$ID, 
+#               ranks, 
+#               results_all, 
+#               gseaParam = 0.5)
+# 
+# asd<- gseapathways %>% dplyr::group_by(gs_name)
+# 
+# asd<- split(gseapathways, seq(nrow(gseapathways))) 
+# 
+# reshape(gseapathways, idvar = c("gs_name"), timevar="gs_name" direction="wide") 
 ```
 

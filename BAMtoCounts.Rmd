@@ -7,17 +7,31 @@ output: html_document
 ```{r setup, include=FALSE}
 library(devtools)
 install_github("vqv/ggbiplot")
+install_load <- function (package1, ...) {
+  packages <- c(package1, ...)
+  for(package in packages){
+    if(package %in% rownames(installed.packages()))
+      next
+    else {
+      install.packages(package)
+      if (!requireNamespace("BiocManager", quietly = TRUE))
+        install.packages("BiocManager")
+      BiocManager::install(package)
+    }
+  }
+  lapply(packages, require, character.only = TRUE)
+}
+lib <-c("ggplot2", "gridExtra", "devtools", "plotly","ggrepel","superheat","tidyverse",'viridis','data.table','heatmaply',"dplyr","ggbiplot", "DESeq2","superheat","edgeR","limma","Glimma","gplots","org.Mm.eg.db","RColorBrewer","fgsea","gridExtra","DEFormats","statmod","org.Hs.eg.db","pheatmap","edgeR","svglite","biomaRt","msigdbr","fgsea","clusterProfiler","enrichplot","DOSE","plyr","ggrastr","Rsamtools","rtracklayer","GenomicAlignments","bedr","Rsubread","GenomicFeatures","doParallel","BiocParallel", "GenomicAlignments","GenomicRanges","rtracklayer","ChIPQC","Rsamtools","Gviz","GenomicFeatures","RMariaDB","BiocParallel","tools","ChIPseeker","TxDb.Mmusculus.UCSC.mm10.knownGene","EnsDb.Mmusculus.v79","clusterProfiler","AnnotationDbi","org.Mm.eg.db","dplyr","diffloop","DiffBind","systemPipeR","plotly")
+install_load(lib)
 install_github("sek0002/sekrnaseq", dependencies=T)
 library(sekrnaseq)
 
-lib <-c("ggplot2", "gridExtra", "devtools", "plotly","ggrepel","superheat","tidyverse",'viridis','data.table','heatmaply',"dplyr","ggbiplot", "DESeq2","superheat","edgeR","limma","Glimma","gplots","org.Mm.eg.db","RColorBrewer","fgsea","gridExtra","DEFormats","statmod","org.Hs.eg.db","pheatmap","edgeR","svglite","biomaRt","msigdbr","fgsea","clusterProfiler","enrichplot","DOSE","plyr","ggrastr","Rsamtools","rtracklayer","GenomicAlignments","bedr","Rsubread","GenomicFeatures","doParallel","BiocParallel", "GenomicAlignments","GenomicRanges","rtracklayer","ChIPQC","Rsamtools","Gviz","GenomicFeatures","RMariaDB","BiocParallel","tools","ChIPseeker","TxDb.Mmusculus.UCSC.mm10.knownGene","EnsDb.Mmusculus.v79","clusterProfiler","AnnotationDbi","org.Mm.eg.db","dplyr","diffloop","DiffBind","systemPipeR","plotly")
-install_load(lib)
 
 
 ```
 ```{r Experiment name and setup}
 ###Input experiment name, format YYYYMMDD_(initials,exp owner)_(projectID/name of experiment)_(special conditions/info). Avoid using spaces and any special characters aside from - and _. Place a folder with the same name, and move Source files to that folder.
-exp_name <- "test"
+exp_name <- "IL715_mouse"
 
 ```
 
@@ -27,7 +41,7 @@ bam_file_paths <- list.files(path = paste0("Source/",exp_name,"/bam-files/"), pa
 
 ##available GTF files include mm9, mm10, hg19, hg38, download gtf files, input path to gtf files
 
-gtffile <- file.path("")
+gtffile <- file.path("Genesets/GTF/mm10/Genomic_Features/Mus_musculus.GRCm38.90.gtf")
 
 ### parallel feature counts (was actually slower!!)
 # registered()
