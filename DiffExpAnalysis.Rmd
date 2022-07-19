@@ -59,6 +59,7 @@ write.table(seqdata, file=paste0("Source/",exp_name,"/Annotated_rawcounts.tsv"),
 
 
 ```{r Diff exp analyses}
+seqdata <- read.delim(paste0("Source/",exp_name,"/Counts_table.tsv"), sep="\t", na.strings = c("", "NA"))
 sampleinfo <- read.delim(paste0("Source/",exp_name,"/sampleinfo.csv"), sep=",")
 for (i in 2:ncol(sampleinfo)){
 sampleinfo[,i] <- make.names(sampleinfo[,i], unique = FALSE, allow_ = TRUE)
